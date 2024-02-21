@@ -18,6 +18,8 @@ public class UserPostResponseDto extends PostResponseDto {
     public Integer commentCount;
     @JsonIgnore
     public String userName;
+    @JsonIgnore
+    public Integer userId;
 
     public UserPostResponseDto(Post post) {
         super(post);

@@ -66,5 +66,64 @@
         WHERE postId=#{post.postId} AND userId=#{post.userId};
     </delete>
 
+<!--    //////////////////////////////////// 여기부터 댓글 관련/////////////////////////////////////-->
+    <select id="findOneExists" resultType="INT">
+        SELECT EXISTS(SELECT 1 FROM post WHERE postId = #{id})
+    </select>
+
+    <insert id="savePostComment" parameterType="com.codepresso.sns.vo.PostComment" useGeneratedKeys="true" keyProperty="commentId">
+        INSERT INTO comment(postId, userId, comment,createdAt, updatedAt)
+        VALUES (#{newPostComment.postId}, #{newPostComment.userId}, #{newPostComment.comment}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+        UPDATE post
+        SET commentCount = commentCount + 1
+        WHERE postId = #{newPostComment.postId}
+    </insert>
+
+    <select id = "findOneComment" resultType="com.codepresso.sns.vo.PostComment">
+        SELECT * FROM comment WHERE commentId = #{id}
+    </select>
+
+    <select id="findCommentByPostId" resultType="com.codepresso.sns.vo.PostComment">
+        SELECT *
+        FROM comment
+        WHERE postid = #{postId}
+        ORDER BY createdAt DESC;
+    </select>
+
+    <select id="findCommentByCommentId" resultType="com.codepresso.sns.vo.PostComment">
+        SELECT *
+        FROM comment
+        WHERE commentId = #{commentId};
+    </select>
+
+    <insert id="likePost">
+        INSERT INTO postLike(userId, postId, createdAt)
+        VALUES(#{userId}, #{postId}, CURRENT_TIMESTAMP);
+
+        UPDATE post
+        SET likeCount = likeCount + 1
+        WHERE postId = #{postId};
+    </insert>
+
+    <delete id="unlikePost">
+        UPDATE post
+        SET likeCount = CASE
+                            WHEN EXISTS (SELECT 1 FROM postlike WHERE userid = #{userId} AND postId = #{postId})
+                                THEN likeCount - 1
+                            ELSE likeCount
+            END
+        WHERE postId = #{postId};
+
+        DELETE FROM postlike
+        WHERE (userid, postId) = (#{userId}, #{postId})
+          AND EXISTS (SELECT 1 FROM postlike WHERE userid = #{userId} AND postId = #{postId});
+
+    </delete>
+
+    <select id="existsLike" resultType="int">
+        SELECT COUNT(*) FROM postlike WHERE userid = #{userId} AND postId = #{postId}
+    </select>
+
 </mapper>
 
