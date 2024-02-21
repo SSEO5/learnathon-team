@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--<mapper namespace="com.codepresso.sns.vo.Post">-->
+<mapper namespace="com.codepresso.sns.mapper.PostMapper">
+
+<!--POST 작성-->
+<!--ID 확인-->
+
+    <select id="checkMemberExists" resultType="INT">
+        SELECT EXISTS(SELECT 1 FROM user WHERE userId = #{userId})
+    </select>
+
+    <insert id="savePost" parameterType="com.codepresso.sns.vo.Post" useGeneratedKeys="true" keyProperty="postId">
+        INSERT INTO post(userId, content, likeCount, commentCount, createdAt, updatedAt)
+        VALUES (#{newPost.userId}, #{newPost.content}, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+    </insert>
+
+    <update id="newUserPost">
+        UPDATE user
+        SET postCount = postCount + 1
+        WHERE userId = (#{userId});
+    </update>
+
+    <select id = "findOne" resultType="com.codepresso.sns.vo.Post">
+        SELECT * FROM post WHERE postId = #{id}
+    </select>
+
+    <!--전체 포스트 확인-->
+    <select id = "findAll" resultType="com.codepresso.sns.vo.Post">
+        SELECT *
+        FROM post
+        ORDER BY createdAt DESC;
+    </select>
+
+    <!--페이지네이션-->
+    <select id="findByPage" resultType="com.codepresso.sns.vo.Post">
+        SELECT *
+        FROM post
+        ORDER BY createdAt DESC
+        LIMIT 3 OFFSET #{offset};
+    </select>
+
+    <select id="countPost" resultType="int">
+        SELECT COUNT(*) FROM post
+    </select>
+
+<!--유저의 작성 게시글 반환-->
+    <select id="findByUserId" resultType="com.codepresso.sns.vo.Post">
+        SELECT *
+        FROM post
+        WHERE userId = #{userId}
+        ORDER BY createdAt DESC;
+    </select>
+
+<!--게시글 수정-->
+    <update id="update">
+        UPDATE post
+        SET content =#{post.content}, updatedAt=CURRENT_TIMESTAMP
+        WHERE postId=#{post.postId};
+    </update>
+
+    <delete id="delete">
+        DELETE FROM post
+        WHERE postId=#{post.postId} AND userId=#{post.userId};
+    </delete>
+
+</mapper>
+
