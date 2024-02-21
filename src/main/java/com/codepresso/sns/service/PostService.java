@@ -57,9 +57,11 @@ public class PostService {
     }
 
 
-    public boolean updatePost(Post post){
-        Integer result = postMapper.update(post);
-        return result ==1;
+    public Post updatePost(Post post){
+        Post editedPost;
+        postMapper.update(post);
+        editedPost = postMapper.findOne(post.getUserId());
+        return editedPost;
     }
 
     public boolean deletePost(Post post){

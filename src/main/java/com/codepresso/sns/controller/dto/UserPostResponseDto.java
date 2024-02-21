@@ -11,16 +11,16 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PagePostResponseDto extends PostResponseDto {
+public class UserPostResponseDto extends PostResponseDto {
     @JsonIgnore
     public Integer likeCount;
     @JsonIgnore
     public Integer commentCount;
+    @JsonIgnore
     public String userName;
 
-    public PagePostResponseDto(Post post) {
+    public UserPostResponseDto(Post post) {
         super(post);
-        this.userName = "TEST"; //controller에서 바꿔야 할수도?
     }
     // Constructors, getters, and setters...
 }

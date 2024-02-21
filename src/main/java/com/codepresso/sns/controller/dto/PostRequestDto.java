@@ -1,9 +1,11 @@
 package com.codepresso.sns.controller.dto;
 
 import com.codepresso.sns.vo.Post;
+import lombok.Getter;
 import lombok.Setter;
 
 @Setter
+@Getter
 public class PostRequestDto {
     Integer userId;
     String title;

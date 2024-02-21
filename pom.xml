@@ -67,6 +67,9 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
+					<mainClass>com.codepresso.sns.CodepressoSnsApplication</mainClass>
+					<layout>JAR</layout>
+
 					<excludes>
 						<exclude>
 							<groupId>org.projectlombok</groupId>
