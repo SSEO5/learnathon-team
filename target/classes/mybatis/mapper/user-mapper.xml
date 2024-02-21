@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.codepresso.sns.mapper.UserMapper">
+    <select id="Login" resultType="com.codepresso.sns.vo.User">
+        SELECT * FROM user WHERE email = #{email} AND password = #{password}
+    </select>
+
+    <select id="findUserSummary" resultType="com.codepresso.sns.vo.User">
+        SELECT *
+        FROM user
+        WHERE userId=#{userId}
+    </select>
+
+    <select id="findUserDetail" resultType="com.codepresso.sns.vo.User">
+        SELECT *
+        FROM user
+        WHERE userId=#{userId}
+    </select>
+
+    <update id="updateUserInfo">
+        UPDATE user
+        SET userName=#{info.userName}, introduction=#{info.introduction}, occupation=#{info.occupation}, city=#{info.city}
+        WHERE userId=#{info.userId}
+    </update>
+
+    <update id="updatePassword">
+        UPDATE user
+        SET password=#{info.password}
+        WHERE userId=#{info.userId}
+    </update>
+
+    <select id="getUserById" resultType="com.codepresso.sns.vo.User">
+        SELECT * FROM user WHERE userId = #{userId}
+    </select>
+
+    <select id="getUserByEmail" resultType="com.codepresso.sns.vo.User">
+        SELECT * FROM user WHERE email = #{email}
+    </select>
+
+    <insert id="save" useGeneratedKeys="true" keyProperty="userId">
+        INSERT INTO user (userName, email, password, introduction, occupation, birthday, city)
+        VALUES (#{info.userName}, #{info.email}, #{info.password}, #{info.introduction}, #{info.occupation}, #{info.birthday}, #{info.city})
+    </insert>
+
+    <select id="existsByEmail" resultType="INT">
+        SELECT EXISTS(SELECT 1 FROM user WHERE email = #{email})
+    </select>
+
+
+
+</mapper>
