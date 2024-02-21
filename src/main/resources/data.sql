@@ -6,9 +6,7 @@ INSERT INTO User (userName, email, password, postCount, followingCount, follower
 INSERT INTO Post (userId, content, likeCount, commentCount) VALUES
 (1, 'Hello, world!', 100, 10),
 (2, 'Exploring the beauty of nature.', 150, 20),
-(3, 'The journey of a thousand miles begins with one step.', 200, 30),
-(4, 'The journey of a thousand miles begins with one step.', 200, 30),
-(5, 'The journey of a thousand miles begins with one step.', 200, 30);
+(3, 'The journey of a thousand miles begins with one step.', 200, 30);
 
 INSERT INTO Comment (postId, userId, comment) VALUES
 (1, 2, 'Great post!'),
