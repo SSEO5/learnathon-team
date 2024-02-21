@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.codepresso.sns.mapper.FollowMapper">
+
+    <select id="existsFollow" resultType="INT">
+        SELECT EXISTS(
+            SELECT  1
+             FROM userFollow
+             WHERE followerId = #{followerId}
+             AND followingId = #{followingId}
+        )
+    </select>
+
+    <insert id="save">
+        INSERT INTO userFollow (followerId, followingId)
+        VALUES (#{followerId}, #{followingId})
+    </insert>
+
+    <delete id="unsave">
+        DELETE FROM userFollow
+        WHERE followerId=#{followerId} AND followingId=#{followingId}
+    </delete>
+
+    <select id="findFollowingUsers" parameterType="Integer" resultType="com.codepresso.sns.vo.User">
+        SELECT u.*
+        FROM user u
+             JOIN userFollow uf ON u.userId = uf.followingId
+        WHERE uf.followerId = #{userId}
+    </select>
+
+    <select id="findFollowerUsers" parameterType="Integer" resultType="com.codepresso.sns.vo.User">
+        SELECT u.*
+        FROM user u
+                 JOIN userFollow uf ON u.userId = uf.followerId
+        WHERE uf.followingId = #{userId}
+    </select>
+
+</mapper>

@@ -7,6 +7,9 @@
     </settings>
 
     <mappers>
-        <mapper resource="mybatis/mapper/post-mapper.xml"/>
+        <mapper resource="mybatis/mapper/user-mapper.xml"/>
+        <mapper resource="mybatis/mapper/follow-mapper.xml"/>
     </mappers>
+
+
 </configuration>
