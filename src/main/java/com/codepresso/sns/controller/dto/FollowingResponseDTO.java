@@ -13,7 +13,7 @@ public class FollowingResponseDTO {
 
     public static FollowingResponseDTO fromUser(User user) {
         FollowingResponseDTO dto = new FollowingResponseDTO();
-        dto.setUserId(user.getUserId());
+        dto.setUserId(user.getId());
         dto.setUserName(user.getUserName());
         dto.setOccupation(user.getOccupation());
         return dto;

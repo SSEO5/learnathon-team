@@ -13,7 +13,7 @@ public class FollowerResponseDTO {
 
     public static FollowerResponseDTO fromUser(User user) {
         FollowerResponseDTO dto = new FollowerResponseDTO();
-        dto.setUserId(user.getUserId());
+        dto.setUserId(user.getId());
         dto.setUserName(user.getUserName());
         dto.setOccupation(user.getOccupation());
         return dto;

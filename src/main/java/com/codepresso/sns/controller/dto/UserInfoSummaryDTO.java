@@ -14,7 +14,7 @@ public class UserInfoSummaryDTO {
     String occupation;
 
     public UserInfoSummaryDTO(User user){
-        this.userId = user.getUserId();
+        this.userId = user.getId();
         this.userName = user.getUserName();
         this.postcount = user.getPostCount();
         this.followingCount = user.getFollowingCount();

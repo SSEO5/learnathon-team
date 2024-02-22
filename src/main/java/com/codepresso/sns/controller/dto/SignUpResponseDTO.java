@@ -16,7 +16,7 @@ public class SignUpResponseDTO {
     String city;
 
     public SignUpResponseDTO(User user){
-        this.userId = user.getUserId();
+        this.userId = user.getId();
         this.userName = user.getUserName();
         this.email = user.getEmail();
         this.introduction = user.getIntroduction();
