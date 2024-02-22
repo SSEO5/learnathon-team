@@ -13,14 +13,14 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PostResponseDto {
-    Integer postId;
-    Integer userId;
-    String userName;
-    String content;
-    Integer likeCount;
-    Integer commentCount;
-    Date createdAt;
-    Date updatedAt;
+    public Integer postId;
+    public Integer userId;
+    public String userName;
+    public String content;
+    public Integer likeCount;
+    public Integer commentCount;
+    public Date createdAt;
+    public Date updatedAt;
 
     //작성 응답
     public PostResponseDto(Post post){

@@ -8,6 +8,8 @@ import com.codepresso.sns.vo.Post;
 import com.codepresso.sns.vo.PostComment;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -70,9 +72,6 @@ public class PostController {
             for(Post post: postList){
                 PagePostResponseDto formattedPost = new PagePostResponseDto(post);
                 formattedPost.setUserName(userService.getUserById(post.getUserId()).getUserName());
-//                System.out.println(post.getUserId());
-//                System.out.println(userService.getUserById(post.getUserId()).getUserName());
-
                 postResponseDtoList.add(formattedPost);
             }
 
@@ -82,18 +81,15 @@ public class PostController {
                 private List<PagePostResponseDto> posts;
                 private int page;
                 private int totalPages;
-
-                // Constructors, getters, and setters
             }
 
             CustomPostResponse pageResponse = new CustomPostResponse();
 
-            // Put values into map with adjusted order
             pageResponse.setPosts(postResponseDtoList);
             pageResponse.setPage(page);
             pageResponse.setTotalPages((int) Math.ceil(postService.totalPost()/3.0));
 
-            return pageResponse;  //숨길건 숨기고 아닌건 나오게 수정
+            return pageResponse;
         }
     }
 
@@ -232,14 +228,17 @@ public class PostController {
             Integer userId = postDto.getUserId();
             try {
                 postService.checkLike(postId, userId);
-            } catch (Exception e) {
+            } catch (DuplicateKeyException e) { //이미 Like 한 경우
+//                System.out.println(e);
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Already Liked");
+            } catch (DataIntegrityViolationException e) { //요청이 잘못된 경우
+//                System.out.println(e);
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Field Missing");
             }
             Map<String, String> response = new HashMap<>();
             response.put("message", "Like successfully added to the post.");
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         }
-
     }
 
     @DeleteMapping("/post/{postId}/like")
@@ -251,16 +250,10 @@ public class PostController {
         } else if (postService.getPostById(postId) == null){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found");
         } else {
-//            Integer userId = postDto.getUserId();
             postService.checkUnlike(postId, userId);
-            try {
-//                postService.checkUnlike(postId, userId);
-            } catch (Exception e) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT, "Already Liked");
-            }
             Map<String, String> response = new HashMap<>();
             response.put("message", "Like successfully removed from the post.");
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            return ResponseEntity.status(HttpStatus.OK).body(response);
         }
 
     }
@@ -294,8 +287,8 @@ public class PostController {
         for(Post post: postList){
             SortedLikedPagePostResponseDto formattedPost = new SortedLikedPagePostResponseDto(post);
             formattedPost.setUserName(userService.getUserById(post.getUserId()).getUserName());
-//            formattedPost.setUpdatedAt(null);
-//            formattedPost.setLikeCount(20);
+            formattedPost.setLikeCount(post.getLikeCount());
+            System.out.println(post.getPostId() + "likes:" + post.getLikeCount());
             formattedPost.setLikedByUser(postService.existsLike(post.getPostId(), userId) == 1);
             postResponseDtoList.add(formattedPost);
         }
