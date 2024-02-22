@@ -15,6 +15,7 @@ import java.util.Date;
 public class PostResponseDto {
     Integer postId;
     Integer userId;
+    String userName;
     String content;
     Integer likeCount;
     Integer commentCount;
@@ -25,6 +26,7 @@ public class PostResponseDto {
     public PostResponseDto(Post post){
         this.postId = post.getPostId();
         this.userId = post.getUserId();
+        this.userName = "USERNAME";
         this.content = post.getContent();
         this.likeCount = post.getLikeCount();
         this.commentCount = post.getCommentCount();

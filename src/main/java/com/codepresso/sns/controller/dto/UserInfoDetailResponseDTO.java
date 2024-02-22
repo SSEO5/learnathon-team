@@ -22,7 +22,7 @@ public class UserInfoDetailResponseDTO {
     LocalDateTime updateAt;
 
     public UserInfoDetailResponseDTO(User user){
-        this.userId = user.getId();
+        this.userId = user.getUserId();
         this.userName = user.getUserName();
         this.email = user.getEmail();
         this.postcount = user.getPostCount();
@@ -33,6 +33,6 @@ public class UserInfoDetailResponseDTO {
         this.birthday = user.getBirthday();
         this.city = user.getCity();
         this.createdAt = user.getCreatedAt();
-        this.updateAt = user.getUpdateAt();
+        this.updateAt = user.getUpdatedAt();
     }
 }

@@ -17,6 +17,7 @@ public interface PostMapper {
     void savePost(@Param("newPost") Post newPost);
     void newUserPost(@Param("userId") Integer userId);
     List<Post> findAll();
+    List<Post> findAllSorted();
 
     int countPost();
 

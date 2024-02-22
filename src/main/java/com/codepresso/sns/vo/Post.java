@@ -29,5 +29,7 @@ public class Post {
         this.content = content;
     }
 
+
+
     //작성 응답
 }

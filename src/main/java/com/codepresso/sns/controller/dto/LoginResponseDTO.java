@@ -13,7 +13,7 @@ public class LoginResponseDTO {
     String token;
 
     public LoginResponseDTO(User user){
-        this.userId = user.getId();
+        this.userId = user.getUserId();
         this.userName = user.getUserName();
         this.email = user.getEmail();
         this.token = generateToken();

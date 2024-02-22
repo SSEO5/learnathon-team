@@ -28,5 +28,24 @@ public class PostComment {
         this.comment = comment;
     }
 
+    public PostComment(PostComment postComment){
+        this.commentId = postComment.getCommentId();
+        this.postId = postComment.getPostId();
+        this.userId = postComment.getUserId();
+        this.comment = postComment.getComment();
+        this.createdAt = postComment.getCreatedAt();
+        this.updatedAt = postComment.getUpdatedAt();
+    }
+
+    public PostComment(Integer commentId, Integer postId, Integer userId, String comment, Date createdAt, Date updatedAt) {
+        this.commentId = commentId;
+        this.postId = postId;
+        this.userId = userId;
+        this.comment = comment;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
+
+
     //작성 응답
 }

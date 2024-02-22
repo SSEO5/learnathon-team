@@ -63,7 +63,7 @@ public class PostService {
     public Post updatePost(Post post){
         Post editedPost;
         postMapper.update(post);
-        editedPost = postMapper.findOne(post.getUserId());
+        editedPost = postMapper.findOne(post.getPostId());
         return editedPost;
     }
 
@@ -80,19 +80,10 @@ public class PostService {
     public PostComment savePostComment(PostComment postComment){
         PostComment newPostComment = new PostComment(postComment.getPostId(), postComment.getUserId(), postComment.getComment());
         postMapper.savePostComment(newPostComment);
+        System.out.println(newPostComment.getCommentId());
         PostComment savedComment = postMapper.findCommentByCommentId(newPostComment.getCommentId());
-        return newPostComment;
+        return savedComment; // Return the savedComment object
     }
-
-//    public Post savePost(Post post){
-//        Post newPost = new Post(post.getUserId(), post.getContent());
-//        postMapper.savePost(newPost);
-//        // Retrieve the updated Post object after saving
-//        Post savedPost = postMapper.findOne(newPost.getPostId());
-//        System.out.println(savedPost.getPostId()); // Ensure postId is not null
-//        postMapper.newUserPost(post.getUserId());
-//        return savedPost;
-//    }
 
     public List<PostComment> getPostCommentByPostId(Integer postId) {
         return postMapper.findCommentByPostId(postId);
@@ -104,11 +95,14 @@ public class PostService {
     //////////////////////////////////// 여기부터 좋아요 관련/////////////////////////////////////
     public Integer checkLike(Integer postId, Integer userId) {return postMapper.likePost(postId, userId);}
 
+    public Integer existsLike(Integer postId, Integer userId) {return postMapper.existsLike(userId, postId);}
     public Integer checkUnlike(Integer postId, Integer userId) {
         if (postMapper.existsLike(userId, postId) != 1) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Like not found");
         }
         return postMapper.unlikePost(postId, userId);
     }
-
+    public List<Post> getPostsSorted() {
+        return postMapper.findAllSorted();
+    }
 }

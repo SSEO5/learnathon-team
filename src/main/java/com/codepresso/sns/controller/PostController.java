@@ -3,6 +3,7 @@ package com.codepresso.sns.controller;
 
 import com.codepresso.sns.controller.dto.*;
 import com.codepresso.sns.service.PostService;
+import com.codepresso.sns.service.UserService;
 import com.codepresso.sns.vo.Post;
 import com.codepresso.sns.vo.PostComment;
 import lombok.Getter;
@@ -22,13 +23,15 @@ import java.util.Map;
 @RestController
 public class PostController {
     private PostService postService;
-    public PostController(PostService postService){
+    private UserService userService;
+    public PostController(UserService userService, PostService postService){
+        this.userService = userService;
         this.postService = postService;
     }
 
     //Post 작성
     @PostMapping("/post")
-    public PostResponseDto createPost(@RequestBody PostRequestDto postDto){
+    public ResponseEntity createPost(@RequestBody PostRequestDto postDto){
         Post post = postDto.getPost();
 
         if (post.getUserId() == null || post.getContent() == null) {
@@ -39,7 +42,7 @@ public class PostController {
             // Save the post and retrieve the updated Post object
             Post savedPost = postService.savePost(post);
             // Convert the Post object to PostResponseDto and return
-            return new PostResponseDto(savedPost);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedPost);
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
@@ -53,20 +56,23 @@ public class PostController {
             List<Post> postList = postService.getPosts();
             List<PagePostResponseDto> postResponseDtoList = new ArrayList<>();
             for(Post post: postList){
-                postResponseDtoList.add(new PagePostResponseDto(post));
+                PagePostResponseDto formattedPost = new PagePostResponseDto(post);
+                System.out.println(userService.getUserById(post.getUserId()).getUserName());
+                formattedPost.setUserName(userService.getUserById(post.getUserId()).getUserName());
+                postResponseDtoList.add(formattedPost);
             }
             res.put("posts", postResponseDtoList);
             return res;
         } else { //페이지 적용
-            //페이지 리턴될 배열
-//            Map<String, Object> pageResponse = new HashMap<>();
-
             //페이지 컨텐트
             List<Post> postList = postService.getPostByPage(page, 3);
             List<PagePostResponseDto> postResponseDtoList = new ArrayList<>();
             for(Post post: postList){
                 PagePostResponseDto formattedPost = new PagePostResponseDto(post);
-                formattedPost.setUserName("User와 동기화 TBD");
+                formattedPost.setUserName(userService.getUserById(post.getUserId()).getUserName());
+//                System.out.println(post.getUserId());
+//                System.out.println(userService.getUserById(post.getUserId()).getUserName());
+
                 postResponseDtoList.add(formattedPost);
             }
 
@@ -98,6 +104,11 @@ public class PostController {
 
         //페이지 컨텐트
         List<Post> postList = postService.getPostByUserId(userId);
+        System.out.println(postList);
+        if (postList.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("no such user exists");
+        }
+
         List<UserPostResponseDto> userPostResponseDtoList = new ArrayList<>();
         for(Post post: postList){
             UserPostResponseDto formattedPost = new UserPostResponseDto(post);
@@ -117,7 +128,7 @@ public class PostController {
         // Put values into map with adjusted order
         pageResponse.setPosts(userPostResponseDtoList);
         pageResponse.setUserId(userId);
-        pageResponse.setUserName("User와 동기화 TBD");
+        pageResponse.setUserName(userService.getUserById(pageResponse.getUserId()).getUserName());
 
         return pageResponse;  //숨길건 숨기고 아닌건 나오게 수정
     }
@@ -125,6 +136,15 @@ public class PostController {
     //포스트 수정
     @PatchMapping("/post/{postId}")
     public PagePostResponseDto updatePost(@PathVariable Integer postId, @RequestBody PostRequestDto postDto){
+        Post post = postDto.getPost();
+        post.setPostId(postId);
+        System.out.println(postId);
+        System.out.println(post.getContent());
+
+        if (post.getUserId() == null || post.getContent() == null){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Factor Missing");
+        }
+
     // valid postId check
         if (postService.getPostById(postId) == null){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found");
@@ -133,12 +153,11 @@ public class PostController {
         if (postService.getPostById(postId).getUserId() != postDto.getUserId()){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Forbidden");
         }
-
-        Post post = postDto.getPost();
-        post.setPostId(postId);
         Post savedPost =  postService.updatePost(post);
+        PagePostResponseDto res = new PagePostResponseDto(savedPost);
+        res.setUserName(userService.getUserById(postDto.getUserId()).getUserName());
         // Convert the Post object to PostResponseDto and return
-        return new PagePostResponseDto(savedPost);
+        return res;
     }
 
     //포스트 삭제
@@ -167,19 +186,17 @@ public class PostController {
 
     //////////////////////////////////// 여기부터 댓글 관련/////////////////////////////////////
     @PostMapping("/post/{postId}/comment")
-    public PostComment createPostComment(@PathVariable Integer postId, @RequestBody PostCommentRequestDto postCommentDto){
+    public void createPostComment(@PathVariable Integer postId, @RequestBody PostCommentRequestDto postCommentDto){
         PostComment postComment = postCommentDto.getPostComment();
-//        System.out.println("data: ");
-//        System.out.println(postComment.getComment());
-//        System.out.println(postComment.getPostId());
-
         postComment.setPostId(postId);
-//        return new PostCommentResponseDto(postComment);
+//      bad request 검증
+        if (postComment.getUserId() == null || postComment.getComment() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userId and comment are required");
+        }
 //        post 검증 과정
         if (postService.checkIfWritten(postId)) { //Post가 존재하면
-            // Save the post comment and retrieve the updated Post object
             PostComment savedPostComment = postService.savePostComment(postComment);
-            return savedPostComment;
+            PostCommentViewDto postCommentViewDto = new PostCommentViewDto(savedPostComment);
         } else { //존재하지 않으면 그냥 뱉는다
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found");
         }
@@ -193,6 +210,7 @@ public class PostController {
             List<CommentByPostDto> userPostResponseDtoList = new ArrayList<>();
             for(PostComment postComment: postCommentList){
                 CommentByPostDto formattedPostComment = new CommentByPostDto(postComment);
+                formattedPostComment.setUserName(userService.getUserById(formattedPostComment.getUserId()).getUserName());
                 userPostResponseDtoList.add(formattedPostComment);
             }
             Map<String, Object> CommentsList = new HashMap<>();
@@ -217,7 +235,9 @@ public class PostController {
             } catch (Exception e) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Already Liked");
             }
-            return ResponseEntity.status(HttpStatus.CREATED).body("{\"message\": \"Like successfully added to the post.\"}");
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Like successfully added to the post.");
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
         }
 
     }
@@ -238,8 +258,49 @@ public class PostController {
             } catch (Exception e) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Already Liked");
             }
-            return ResponseEntity.status(HttpStatus.OK).body("{\"message\": \"Like successfully removed from the post.\"}");
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Like successfully removed from the post.");
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
         }
+
+    }
+
+    //////////////////////////////////// 여기부터 좋아요 implement 후 /////////////////////////////////////
+
+    @GetMapping(value = "/posts", params = "userId")
+    public Object getPostListLikedByUser(@RequestParam("userId") Integer userId) {
+        //페이지 없이
+            Map<String, Object> res = new HashMap<>();
+            List<Post> postList = postService.getPosts();
+            List<LikedPagePostResponseDto> postResponseDtoList = new ArrayList<>();
+            for(Post post: postList){
+                LikedPagePostResponseDto formattedPost = new LikedPagePostResponseDto(post);
+                formattedPost.setUserName(userService.getUserById(post.getUserId()).getUserName());
+                formattedPost.setUpdatedAt(null);
+//                formattedPost.setLikeCount(30);
+                formattedPost.setLikedByUser(postService.existsLike(post.getPostId(), userId) == 1);
+                postResponseDtoList.add(formattedPost);
+            }
+            res.put("posts", postResponseDtoList);
+            return res;
+
+    }
+
+    @GetMapping(value = "/posts/sortedByLikes", params = "userId")
+    public Object getPostListSortedLikedByUser(@RequestParam("userId") Integer userId) {
+        Map<String, Object> res = new HashMap<>();
+        List<Post> postList = postService.getPostsSorted();
+        List<SortedLikedPagePostResponseDto> postResponseDtoList = new ArrayList<>();
+        for(Post post: postList){
+            SortedLikedPagePostResponseDto formattedPost = new SortedLikedPagePostResponseDto(post);
+            formattedPost.setUserName(userService.getUserById(post.getUserId()).getUserName());
+//            formattedPost.setUpdatedAt(null);
+//            formattedPost.setLikeCount(20);
+            formattedPost.setLikedByUser(postService.existsLike(post.getPostId(), userId) == 1);
+            postResponseDtoList.add(formattedPost);
+        }
+        res.put("posts", postResponseDtoList);
+        return res;
 
     }
 }

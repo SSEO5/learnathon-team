@@ -8,10 +8,12 @@ import org.springframework.stereotype.Service;
 //import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Service
-@RequiredArgsConstructor
 public class UserService {
 
     private final UserMapper userMapper;
+    public UserService(UserMapper userMapper){
+        this.userMapper = userMapper;
+    }
 //    private final BCryptPasswordEncoder passwordEncoder;
 
     public User getUserById(Integer userId) {
