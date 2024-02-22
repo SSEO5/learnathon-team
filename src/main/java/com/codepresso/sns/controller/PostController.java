@@ -182,7 +182,7 @@ public class PostController {
 
     //////////////////////////////////// 여기부터 댓글 관련/////////////////////////////////////
     @PostMapping("/post/{postId}/comment")
-    public void createPostComment(@PathVariable Integer postId, @RequestBody PostCommentRequestDto postCommentDto){
+    public ResponseEntity<PostCommentViewDto> createPostComment(@PathVariable Integer postId, @RequestBody PostCommentRequestDto postCommentDto){
         PostComment postComment = postCommentDto.getPostComment();
         postComment.setPostId(postId);
 //      bad request 검증
@@ -193,6 +193,7 @@ public class PostController {
         if (postService.checkIfWritten(postId)) { //Post가 존재하면
             PostComment savedPostComment = postService.savePostComment(postComment);
             PostCommentViewDto postCommentViewDto = new PostCommentViewDto(savedPostComment);
+            return ResponseEntity.status(HttpStatus.CREATED).body(postCommentViewDto);
         } else { //존재하지 않으면 그냥 뱉는다
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found");
         }
