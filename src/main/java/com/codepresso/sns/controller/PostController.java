@@ -6,6 +6,7 @@ import com.codepresso.sns.service.PostService;
 import com.codepresso.sns.service.UserService;
 import com.codepresso.sns.vo.Post;
 import com.codepresso.sns.vo.PostComment;
+import com.codepresso.sns.vo.Tag;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -16,10 +17,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Controller
 @RestController
@@ -41,30 +39,89 @@ public class PostController {
         }
         //username 검증 과정
         if (postService.checkIfMember(post.getUserId())) {
-            // Save the post and retrieve the updated Post object
+            //tag => postId 가져온 후 나와야함
+            // Tag 단어들 추출 후 본래 본문에서는 제거 처리
+            String s = post.getContent();
+            String[] tags = s.split("\\#", 0);
+            post.setContent(tags[0].substring(0, tags[0].length() - 1));
+
             Post savedPost = postService.savePost(post);
-            // Convert the Post object to PostResponseDto and return
-            return ResponseEntity.status(HttpStatus.CREATED).body(savedPost);
+
+            PostWithTagResponseDto response = new PostWithTagResponseDto(post);
+
+            //Tag 있는지 확인 -> 있고 없고에 따라 리턴하는 형태 다름
+            if (tags.length > 1 ) { //Tag가 있다면
+                tags = Arrays.copyOfRange(tags, 1, tags.length); //Tag만 있는 Array로 카피해서 온전한 문자열로 처리
+                ArrayList<Tag> tagArray = new ArrayList<>();
+                for (int i = 0; i< tags.length; i++) { //각 태그에 대해
+                    String sub_string = tags[i];
+                    if (sub_string.endsWith(", ")) { //구분자인 , 재거
+                        tags[i] = sub_string.substring(0, sub_string.length() - 2);
+                    }
+
+                    //해당 Tag 있는지 확인 후 삽입
+                    if (postService.findTag(tags[i]) == null){
+                        postService.tagInsertion(tags[i]);
+                    }
+
+                    // (tagId, postId) 주입
+                    postService.tagPostInsertion(postService.findTag(tags[i]), savedPost.getPostId());
+
+                    //dto에 들어갈 tag 배열에 추가
+                    tagArray.add(new Tag(postService.findTag(tags[i]), tags[i]));
+
+                }
+                //dto에 tag 배열 저장
+                response.setTags(tagArray);
+                response.setPostId(savedPost.getPostId());
+                return ResponseEntity.status(HttpStatus.CREATED).body(response); //새로운 dto 만들어서 수정하면 됨.
+            } else {
+                return ResponseEntity.status(HttpStatus.CREATED).body(savedPost);
+            }
+
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
+
     }
 
     //전체 Post 조회 API
     @GetMapping("/posts")
     public Object getPostList(@RequestParam(required = false, defaultValue = "0") Integer page){
         if (page == 0){ //페이지 없이
+
+//            태그 적용 전
+//            Map<String, Object> res = new HashMap<>();
+//            List<Post> postList = postService.getPosts();
+//            List<PagePostResponseDto> postResponseDtoList = new ArrayList<>();
+//            for(Post post: postList){
+//                PagePostResponseDto formattedPost = new PagePostResponseDto(post);
+//                System.out.println(userService.getUserById(post.getUserId()).getUserName());
+//                formattedPost.setUserName(userService.getUserById(post.getUserId()).getUserName());
+//                postResponseDtoList.add(formattedPost);
+//            }
+//            res.put("posts", postResponseDtoList);
+//            return res;
+
+//            태그 적용 후
             Map<String, Object> res = new HashMap<>();
             List<Post> postList = postService.getPosts();
-            List<PagePostResponseDto> postResponseDtoList = new ArrayList<>();
+            List<PostPageWithTagResponseDto> postResponseDtoList = new ArrayList<>();
             for(Post post: postList){
-                PagePostResponseDto formattedPost = new PagePostResponseDto(post);
-                System.out.println(userService.getUserById(post.getUserId()).getUserName());
+                PostPageWithTagResponseDto formattedPost = new PostPageWithTagResponseDto(post);
                 formattedPost.setUserName(userService.getUserById(post.getUserId()).getUserName());
+                //여기서 태그 관련 기능 구현
+                ArrayList<Tag> tagArray;
+                tagArray = postService.findPostTag(post.getPostId());
+                for(Tag tag: tagArray){
+                    System.out.println(tag.getTagName());
+                }
+                formattedPost.setTags(tagArray);
                 postResponseDtoList.add(formattedPost);
             }
             res.put("posts", postResponseDtoList);
             return res;
+
         } else { //페이지 적용
             //페이지 컨텐트
             List<Post> postList = postService.getPostByPage(page, 3);
@@ -92,6 +149,7 @@ public class PostController {
             return pageResponse;
         }
     }
+
 
     //유저별 포스트 조회
     @GetMapping("/user/{userId}/posts")
@@ -131,29 +189,124 @@ public class PostController {
 
     //포스트 수정
     @PatchMapping("/post/{postId}")
-    public PagePostResponseDto updatePost(@PathVariable Integer postId, @RequestBody PostRequestDto postDto){
+    public ResponseEntity updatePost(@PathVariable Integer postId, @RequestBody PostRequestDto postDto){
+//        태그 적용 전
+//        Post post = postDto.getPost();
+//        post.setPostId(postId);
+//        System.out.println(postId);
+//        System.out.println(post.getContent());
+//
+//        if (post.getUserId() == null || post.getContent() == null){
+//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Factor Missing");
+//        }
+//
+//    // valid postId check
+//        if (postService.getPostById(postId) == null){
+//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found");
+//        }
+//    // userid check
+//        if (postService.getPostById(postId).getUserId() != postDto.getUserId()){
+//            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Forbidden");
+//        }
+//        Post savedPost =  postService.updatePost(post);
+//        PagePostResponseDto res = new PagePostResponseDto(savedPost);
+//        res.setUserName(userService.getUserById(postDto.getUserId()).getUserName());
+//        // Convert the Post object to PostResponseDto and return
+//        return res;
+
+//        태그 적용 후
         Post post = postDto.getPost();
         post.setPostId(postId);
-        System.out.println(postId);
-        System.out.println(post.getContent());
 
         if (post.getUserId() == null || post.getContent() == null){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Factor Missing");
         }
 
-    // valid postId check
         if (postService.getPostById(postId) == null){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found");
         }
-    // userid check
+
         if (postService.getPostById(postId).getUserId() != postDto.getUserId()){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Forbidden");
         }
-        Post savedPost =  postService.updatePost(post);
-        PagePostResponseDto res = new PagePostResponseDto(savedPost);
-        res.setUserName(userService.getUserById(postDto.getUserId()).getUserName());
-        // Convert the Post object to PostResponseDto and return
-        return res;
+
+        //여기서 태그 관련 기능 구현
+
+        //기존 태그 배열 받기
+        ArrayList<Tag> oldTagArray;
+        oldTagArray = postService.findPostTag(post.getPostId());
+
+        //추후 비교 위한 구) 태그의 id 배열 선언
+        ArrayList oldTagIdArray = new ArrayList<Integer>();
+        for (Tag tag:oldTagArray ){
+            oldTagIdArray.add(tag.getTagId());
+        }
+
+        //수정된 태그 배열 선언
+        ArrayList<Tag> newTagArray = new ArrayList<>();
+
+        //태그 추출 및 수정된 본문
+        String s = post.getContent();
+        String[] tags = s.split("\\#", 0);
+        post.setContent(tags[0].substring(0, tags[0].length() - 1));
+
+        PostWithTagResponseDto response = new PostWithTagResponseDto(post);
+
+        //Tag 있는지 확인 -> 있고 없고에 따라 리턴하는 형태 다름
+        if (tags.length > 1 ) { //Tag가 있다면
+            tags = Arrays.copyOfRange(tags, 1, tags.length); //Tag만 있는 Array로 카피해서 온전한 문자열로 처리
+
+            for (int i = 0; i< tags.length; i++) { //각 태그에 대해
+                String sub_string = tags[i];
+                if (sub_string.endsWith(", ")) { //구분자인 , 재거
+                    tags[i] = sub_string.substring(0, sub_string.length() - 2);
+                }
+
+//                System.out.println(tags[i] + postService.findTag(tags[i]) );
+
+                //새 베열에 있는 것들
+                //새 배열에 있는 것들은 일단 태그 테이블에 다 삽입
+                if (postService.findTag(tags[i]) == null){ //중복 방지
+                    postService.tagInsertion(tags[i]);
+                }
+
+                //임시 Tag Element 생성
+                Tag tempTag = new Tag(postService.findTag(tags[i]), tags[i]);
+//                System.out.println("TEMP: " + postService.findTag(tags[i])+ " " + tags[i]);
+                newTagArray.add(tempTag);
+
+                //해당 Tag가 이미 있었고, 있다면 스킵
+                //해당 Tag가 없었는데 있다면? 관계 테이블에 삽입
+                if (!oldTagIdArray.contains(tempTag.getTagId())) {
+                    postService.tagPostInsertion(tempTag.getTagId(), post.getPostId());
+                }
+            }
+
+            //추후 비교 위한 id 배열 선언
+            ArrayList newTagIdArray = new ArrayList<Integer>();
+            for (Tag tag:newTagArray ){
+                newTagIdArray.add(tag.getTagId());
+            }
+
+            //원래 있지만 새 테이블에 없는 경우 -> 관계 테이블에서 삭제
+            for(Tag oldTempTag: oldTagArray){
+                if(!newTagIdArray.contains(oldTempTag.getTagId())){
+                    postService.tagPostDeletion(oldTempTag.getTagId(), post.getPostId());
+                }
+            }
+
+        }
+        //dto에 tag 배열 저장
+        response.setTags(newTagArray);
+        response.setPostId(post.getPostId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(response); //새로운 dto 만들어서 수정하면 됨.
+
+
+        //있었는데 없으면 삭제
+
+        //없었는데 있으면 추가
+
+        //게시글 작성과 같은 방식으로 응답하기
     }
 
     //포스트 삭제
