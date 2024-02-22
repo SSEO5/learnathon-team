@@ -1,33 +1,36 @@
 package com.codepresso.sns.controller.dto;
 
-import com.codepresso.sns.controller.dto.PagePostResponseDto;
-import com.codepresso.sns.controller.dto.PostResponseDto;
 import com.codepresso.sns.vo.Post;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.boot.jackson.JsonComponent;
 
 import java.util.Date;
 
 @Getter
 @Setter
-@JsonComponent
-@JsonInclude(JsonInclude.Include.ALWAYS)
-public class SortedLikedPagePostResponseDto extends PagePostResponseDto {
+@AllArgsConstructor
+@NoArgsConstructor
 
-
+public class SortedLikedPagePostResponseDto {
+    public Integer postId;
+    public Integer userId;
+    public String userName;
+    public String content;
+    public Date createdAt;
     public Integer likeCount;
     public boolean likedByUser;
 
-    @JsonIgnore
-    public Date updatedAt;
-
-    public SortedLikedPagePostResponseDto(Post post) {
-        super(post);
-        this.updatedAt = null;
-//        this.likeCount = 30;
+    //작성 응답
+    public SortedLikedPagePostResponseDto(Post post){
+        this.postId = post.getPostId();
+        this.userId = post.getUserId();
+        this.userName = "USERNAME";
+        this.content = post.getContent();
+        this.likeCount = post.getLikeCount();
+        this.createdAt = post.getCreatedAt();
+//        this.likedByUser = post.getL();
     }
-
 }
+
