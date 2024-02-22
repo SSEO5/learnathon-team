@@ -52,4 +52,5 @@ public interface PostMapper {
 
     //태그 탑색
     ArrayList<Tag> findPostTag(@Param("postId") Integer postId);
+    ArrayList<Tag> findAllTag();
 }

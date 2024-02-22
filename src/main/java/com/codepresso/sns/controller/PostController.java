@@ -450,5 +450,13 @@ public class PostController {
         return res;
 
     }
+
+    //////////////////////////////////// 여기부터 태그 관련/////////////////////////////////////
+    @GetMapping(value = "/tags")
+    public Object getTags() {
+        Map<String, Object> resArray = new HashMap<>();
+        resArray.put("tags", postService.findAllTag());
+        return resArray;
+    }
 }
 
