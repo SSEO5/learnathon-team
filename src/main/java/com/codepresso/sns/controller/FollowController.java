@@ -28,7 +28,7 @@ public class FollowController {
     private final UserService userService;
 
     @PostMapping("/follow")
-    public ResponseEntity followUser(@Valid @RequestBody FollowRequestDTO request){
+    public String followUser(@Valid @RequestBody FollowRequestDTO request){
         if(followService.existsFollow(request)){
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Follow already exists");
         }
@@ -41,14 +41,11 @@ public class FollowController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Following user not found");
         }
         followService.follow(request);
-
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "User " + request.followerId() + " successfully followed User " + request.followingId() + ".");
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return "User " + request.followerId() + " successfully followed User " + request.followingId() + ".";
     }
 
     @DeleteMapping("/follow")
-    public ResponseEntity unfollowUser(@Valid @RequestBody FollowRequestDTO request){
+    public String unfollowUser(@Valid @RequestBody FollowRequestDTO request){
         User follower = userService.getUserById(request.followerId());
         if(follower == null){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Follower user not found");
@@ -62,10 +59,7 @@ public class FollowController {
         }
 
         followService.unfollow(request);
-
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "User " + request.followerId() + " successfully unfollowed User " + request.followingId() + ".");
-        return ResponseEntity.ok().body(response);
+        return "User " + request.followerId() + " successfully unfollowed User " + request.followingId() + ".";
     }
 
     @GetMapping("/user/{userId}/following")

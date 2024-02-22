@@ -4,18 +4,17 @@ import com.codepresso.sns.controller.dto.SignUpRequestDTO;
 import com.codepresso.sns.mapper.UserMapper;
 import com.codepresso.sns.vo.User;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+//import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Service
-@RequiredArgsConstructor
 public class UserService {
 
     private final UserMapper userMapper;
-
-    @Autowired
-    private final BCryptPasswordEncoder passwordEncoder;
+    public UserService(UserMapper userMapper){
+        this.userMapper = userMapper;
+    }
+//    private final BCryptPasswordEncoder passwordEncoder;
 
     public User getUserById(Integer userId) {
         return userMapper.getUserById(userId);
@@ -34,30 +33,23 @@ public class UserService {
     }
 
     public User signup(SignUpRequestDTO request) {
-        String hashedPassword = passwordEncoder.encode(request.password());
+//        String hashedPassword = passwordEncoder.encode(request.getPassword());
 
         User newUser = new User();
-        newUser.setUserName(request.userName());
-        newUser.setEmail(request.email());
-        //newUser.setPassword(request.getPassword());
-        newUser.setPassword(hashedPassword);
-        newUser.setIntroduction(request.introduction());
-        newUser.setOccupation(request.occupation());
-        newUser.setBirthday(request.birthday());
-        newUser.setCity(request.city());
+        newUser.setUserName(request.getUserName());
+        newUser.setEmail(request.getEmail());
+        newUser.setPassword(request.getPassword());
+        //newUser.setPassword(hashedPassword);
+        newUser.setIntroduction(request.getIntroduction());
+        newUser.setOccupation(request.getOccupation());
+        newUser.setBirthday(request.getBirthday());
+        newUser.setCity(request.getCity());
         userMapper.save(newUser);
         return newUser;
     }
 
     public boolean existsByEmail(String email){
         return userMapper.existsByEmail(email)==1;
-    }
-
-
-    public boolean authenticateUser(String email, String password) {
-        User user = getUserByEmail(email);
-        // 사용자가 존재하고, 입력한 비밀번호가 암호화된 비밀번호와 일치하는지 검증
-        return user != null && passwordEncoder.matches(password, user.getPassword());
     }
 
 }

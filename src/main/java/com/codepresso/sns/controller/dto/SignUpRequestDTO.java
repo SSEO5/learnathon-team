@@ -4,10 +4,18 @@ import com.codepresso.sns.vo.User;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
 import java.util.Date;
 
+@Setter
+@Getter
+public class SignUpRequestDTO {
+    String userName;
+    String email;
+    String password;
+    String introduction;
+    String occupation;
+    Date birthday;
+    String city;
 
-public record SignUpRequestDTO(@NotBlank String userName, @Email @NotBlank String email, @NotBlank String password, String introduction, String occupation, Date birthday, String city) {
+
 }

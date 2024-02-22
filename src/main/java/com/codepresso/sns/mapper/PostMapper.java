@@ -1,10 +1,12 @@
 package com.codepresso.sns.mapper;
 import com.codepresso.sns.vo.Post;
 import com.codepresso.sns.vo.PostComment;
+import com.codepresso.sns.vo.Tag;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Mapper
@@ -35,8 +37,20 @@ public interface PostMapper {
 
     List<PostComment> findCommentByPostId(@Param("postId") Integer postId);
     PostComment findCommentByCommentId(@Param("commentId") Integer commentId);
+
     //////////////////////////////////// 여기부터 좋아요 관련/////////////////////////////////////
     Integer likePost(@Param("postId") Integer postId, @Param("userId") Integer userId);
     Integer unlikePost(@Param("postId") Integer postId, @Param("userId") Integer userId);
     int existsLike(@Param("userId") Integer userId, @Param("postId") Integer postId);
+
+    //////////////////////////////////// 여기부터 태그 관련/////////////////////////////////////
+
+    //태그 삽입
+    Integer findTag(@Param("tag") String tag);
+    void tagInsertion(@Param("tag") String tag);
+    void tagPostInsertion(@Param("tagId") Integer tagId, @Param("postId") Integer postId);
+    void tagPostDeletion(@Param("tagId") Integer tagId, @Param("postId") Integer postId);
+
+    //태그 탑색
+    ArrayList<Tag> findPostTag(@Param("postId") Integer postId);
 }

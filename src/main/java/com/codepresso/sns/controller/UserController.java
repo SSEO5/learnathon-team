@@ -14,9 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 import javax.validation.Valid;
 import java.awt.image.PixelGrabber;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Controller
 @RestController
@@ -28,7 +26,11 @@ public class UserController {
     // 회원가입
     @PostMapping("/user/signup")
     public ResponseEntity<SignUpResponseDTO> Signup(@Valid @RequestBody SignUpRequestDTO request) {
-        if (userService.existsByEmail(request.email())){
+        // 필수 필드가 누락
+        if (request.getUserName() == null || request.getEmail() == null || request.getPassword() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Required fields are missing");
+        }
+        if (userService.existsByEmail(request.getEmail())){
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
         }
         User newUser = userService.signup(request);
@@ -38,10 +40,10 @@ public class UserController {
 
     // 로그인
     @PostMapping("/user/login")
-    public ResponseEntity<LoginResponseDTO> Login(@Valid @RequestBody LoginRequestDTO request){
-        if(userService.authenticateUser(request.email(), request.password())){
-            User user = userService.getUserByEmail(request.email());
-            return ResponseEntity.ok(new LoginResponseDTO(user));
+    public LoginResponseDTO Login(@Valid @RequestBody LoginRequestDTO request){
+        User user = userService.getUserByEmail(request.email());
+        if(user != null && user.getPassword().equals(request.password())){
+            return new LoginResponseDTO(user);
         }
         else {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password");
@@ -86,21 +88,22 @@ public class UserController {
 
     // 비밀번호 수정
     @PatchMapping("/user/{userId}/password")
-    public ResponseEntity UpdatePassword(@PathVariable("userId") Integer userId, @RequestBody PasswordRequestDTO request) {
+    public String UpdatePassword(@PathVariable("userId") Integer userId, @RequestBody PasswordRequestDTO request) {
         User user = userService.getUserById(userId);
-        if(user == null){
+        if (user != null) {
+            String currentPassword = user.getPassword();
+            String newPassword = request.newPassword();
+            System.out.println(currentPassword);
+            if (currentPassword.equals(request.currentPassword())) {
+                user.setPassword(newPassword);
+                userService.updatePassword(user);
+                return "Password successfully updated.";
+            } else {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid current password.");
+            }
+        } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
         }
-        if(userService.authenticateUser(user.getEmail(), request.currentPassword())){
-            user.setPassword(request.newPassword());
-            userService.updatePassword(user);
-            System.out.println(user.getPassword());
-
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Password successfully updated.");
-            return ResponseEntity.ok().body(response);
-        } else {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid current password.");
-        }
     }
+
 }
