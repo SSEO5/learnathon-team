@@ -299,7 +299,7 @@ public class PostController {
         //dto에 tag 배열 저장
         response.setTags(newTagArray);
         response.setPostId(post.getPostId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(response); //새로운 dto 만들어서 수정하면 됨.
+        return ResponseEntity.status(HttpStatus.OK).body(response); //새로운 dto 만들어서 수정하면 됨.
 
 
         //있었는데 없으면 삭제
@@ -449,6 +449,24 @@ public class PostController {
         res.put("posts", postResponseDtoList);
         return res;
 
+    }
+
+    //////////////////////////////////// 여기부터 태그 관련/////////////////////////////////////
+    @GetMapping(value = "/tags")
+    public Object getTags() {
+        Map<String, Object> resArray = new HashMap<>();
+        resArray.put("tags", postService.findAllTag());
+        return resArray;
+    }
+
+    @GetMapping(value = "/tags/user/{userId}")
+    public Object getUsersTags(@PathVariable("userId") Integer userId) {
+        if (!postService.checkIfMember(userId)){ //user 없는 경우 반환
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }
+        Map<String, Object> resArray = new HashMap<>();
+        resArray.put("tags", postService.findUsersTag(userId));
+        return resArray;
     }
 }
 

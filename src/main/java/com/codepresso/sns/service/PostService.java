@@ -114,4 +114,6 @@ public class PostService {
     public void tagPostInsertion(Integer tagId, Integer postId){postMapper.tagPostInsertion(tagId, postId);}
     public void tagPostDeletion(Integer tagId, Integer postId){postMapper.tagPostDeletion(tagId, postId);}
     public ArrayList<Tag> findPostTag(Integer postId){return postMapper.findPostTag(postId);}
+    public ArrayList<Tag> findAllTag(){return postMapper.findAllTag();}
+    public ArrayList<Tag> findUsersTag(Integer userId){return postMapper.findUsersTag(userId);}
 }

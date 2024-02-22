@@ -151,6 +151,22 @@
         WHERE tag.tagId IN (SELECT tagID FROM postTag WHERE postId = #{postId});
     </select>
 
+    <select id="findAllTag" resultType="com.codepresso.sns.vo.Tag">
+        SELECT *
+        FROM tag
+        ORDER BY (SELECT COUNT(*) FROM postTag WHERE postTag.tagId=tag.tagID) DESC;
+    </select>
+
+
+    <select id="findUsersTag" resultType="com.codepresso.sns.vo.Tag">
+        SELECT tag.*
+        FROM tag
+                 JOIN posttag ON tag.tagId = posttag.tagId
+                 JOIN post ON post.postId = posttag.postId
+        WHERE post.userId = #{userId}
+        GROUP BY tag.tagId, tag.tagName
+        ORDER BY COUNT(*) DESC;
+    </select>
 
 </mapper>
 
