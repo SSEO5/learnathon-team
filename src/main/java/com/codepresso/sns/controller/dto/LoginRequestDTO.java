@@ -6,5 +6,5 @@ import lombok.Getter;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
-public record LoginRequestDTO(@Email String email, @NotBlank String password) {
+public record LoginRequestDTO(@Email @NotBlank String email, @NotBlank String password) {
 }
