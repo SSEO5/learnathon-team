@@ -458,5 +458,15 @@ public class PostController {
         resArray.put("tags", postService.findAllTag());
         return resArray;
     }
+
+    @GetMapping(value = "/tags/user/{userId}")
+    public Object getUsersTags(@PathVariable("userId") Integer userId) {
+        if (!postService.checkIfMember(userId)){ //user 없는 경우 반환
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }
+        Map<String, Object> resArray = new HashMap<>();
+        resArray.put("tags", postService.findUsersTag(userId));
+        return resArray;
+    }
 }
 
