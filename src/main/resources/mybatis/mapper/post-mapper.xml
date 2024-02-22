@@ -128,6 +128,29 @@
         SELECT COUNT(*) FROM postlike WHERE userid = #{userId} AND postId = #{postId}
     </select>
 
+    <!--    //////////////////////////////////// 여기부터 태그 관련/////////////////////////////////////-->
+    <select id="findTag" parameterType="String" resultType="Integer">
+        SELECT tagId FROM tag WHERE tagName = #{tag};
+    </select>
+
+    <insert id="tagInsertion" parameterType="String">
+        INSERT INTO tag(tagName) VALUES(#{tag});
+    </insert>
+
+    <insert id="tagPostInsertion" parameterType="Integer">
+        INSERT INTO postTag(postId, tagId) VALUES(#{postId}, #{tagId});
+    </insert>
+
+    <delete id="tagPostDeletion" parameterType="Integer">
+        DELETE FROM postTag WHERE postId=#{postId} AND tagId=#{tagId};
+    </delete>
+
+    <select id="findPostTag" parameterType="Integer" resultType="com.codepresso.sns.vo.Tag">
+        SELECT *
+        FROM tag
+        WHERE tag.tagId IN (SELECT tagID FROM postTag WHERE postId = #{postId});
+    </select>
+
 
 </mapper>
 

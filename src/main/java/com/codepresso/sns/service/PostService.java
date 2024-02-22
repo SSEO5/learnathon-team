@@ -3,11 +3,13 @@ package com.codepresso.sns.service;
 import com.codepresso.sns.mapper.PostMapper;
 import com.codepresso.sns.vo.Post;
 import com.codepresso.sns.vo.PostComment;
+import com.codepresso.sns.vo.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -105,4 +107,11 @@ public class PostService {
     public List<Post> getPostsSorted() {
         return postMapper.findAllSorted();
     }
+
+    //////////////////////////////////// 여기부터 태그 관련/////////////////////////////////////
+    public Integer findTag(String tag){return postMapper.findTag(tag);}
+    public void tagInsertion(String tag){postMapper.tagInsertion(tag);}
+    public void tagPostInsertion(Integer tagId, Integer postId){postMapper.tagPostInsertion(tagId, postId);}
+    public void tagPostDeletion(Integer tagId, Integer postId){postMapper.tagPostDeletion(tagId, postId);}
+    public ArrayList<Tag> findPostTag(Integer postId){return postMapper.findPostTag(postId);}
 }
